@@ -1,4 +1,5 @@
 from urllib.parse import urlsplit
+from bs4 import BeautifulSoup, Tag
 
 def normalize_url(url: str) -> str:
     # Break the URL into its components (scheme, netloc, path, etc.)
@@ -13,3 +14,34 @@ def normalize_url(url: str) -> str:
 
     # Combine hostname + path into the normalized URL
     return hostname + path
+
+def get_heading_from_html(html: str) -> str:
+    # parse the HTML string into a beautifulsoup object
+    soup = BeautifulSoup(html, "html.parser")
+
+    # try to find an <h1> first
+    h_tag = soup.find("h1")
+
+    # if no <h1> exists, fall back to <h2>
+    if h_tag is None:
+        h_tag = soup.find("h2")
+    
+    # safely extract the text if we found a tag, otherwise return empty string
+    return h_tag.get_text(strip=True) if isinstance(h_tag, Tag) else ""
+    
+def get_first_paragraph_from_html(html: str) -> str:
+    # parse the html string into a beautifulsoup object
+    soup = BeautifulSoup(html, "html.parser")
+
+    # First, try to find a <main> tag
+    main = soup.find("main")
+
+    if main is not None:
+        # if <main> exists, look for the first <p> inside it
+        p_tag = main.find("p")
+    else:
+        # otherwise, just take the first <p> in the whole document
+        p_tag = soup.find("p")
+    
+    # safely extract the text if a <p> tag is found, otherwise return an empty string
+    return p_tag.get_text(strip=True) if isinstance(p_tag, Tag) else ""
