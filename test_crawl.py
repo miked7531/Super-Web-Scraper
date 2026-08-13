@@ -1,5 +1,11 @@
 import unittest
-from crawl import normalize_url, get_heading_from_html, get_first_paragraph_from_html
+from crawl import (
+    normalize_url, 
+    get_heading_from_html, 
+    get_first_paragraph_from_html,
+    get_urls_from_html,
+    get_images_from_html,
+    )
 
 class TestCrawl(unittest.TestCase):
     def test_normalize_url(self):
@@ -77,6 +83,70 @@ class TestCrawl(unittest.TestCase):
         input_body = "<html><body><h1>No paragraphs here</h1></body></html>"
         actual = get_first_paragraph_from_html(input_body)
         expected = ""
+        self.assertEqual(actual, expected)
+    
+    def test_get_urls_from_html_absolute(self):
+        # Absolute URL should be returned as-is
+        input_url = "https://crawler-test.com"
+        input_body = '<html><body><a href="https://crawler-test.com"><span>Boot.dev</span></a></body></html>'
+        actual = get_urls_from_html(input_body, input_url)
+        expected = ["https://crawler-test.com"]
+        self.assertEqual(actual, expected)
+
+    def test_get_urls_from_html_relative(self):
+        # Relative URL should be turned into an absolute URL
+        input_url = "https://crawler-test.com"
+        input_body = '<html><body><a href="/path/one"><span>Boot.dev</span></a></body></html>'
+        actual = get_urls_from_html(input_body, input_url)
+        expected = ["https://crawler-test.com/path/one"]
+        self.assertEqual(actual, expected)
+    
+    def test_get_urls_from_html_multiple(self):
+        # should find every <a> tag
+        input_url = "https://crawler-test.com"
+        input_body = '''
+        <html><body>
+            <a href="/path/one">Link 1</a>
+            <a href="https://other.com/path">Link 2</a>
+        </body></html>
+        '''
+        actual = get_urls_from_html(input_body, input_url)
+        expected = [
+            "https://crawler-test.com/path/one",
+            "https://other.com/path",
+        ]
+        self.assertEqual(actual, expected)
+    
+    def test_get_images_from_html_relative(self):
+        # relative image src should become absolute
+        input_url = "https://crawler-test.com"
+        input_body = '<html><body><img src="/logo.png" alt="Logo"></body></html>'
+        actual = get_images_from_html(input_body, input_url)
+        expected = ["https://crawler-test.com/logo.png"]
+        self.assertEqual(actual, expected)
+
+    def test_get_images_from_html_absolute(self):
+        # absolute image src should be returned as-is
+        input_url = "https://crawler-test.com"
+        input_body = '<html><body><img src="https://crawler-test.com/logo.png" alt="Logo"></body></html>'
+        actual = get_images_from_html(input_body, input_url)
+        expected = ["https://crawler-test.com/logo.png"]
+        self.assertEqual(actual, expected)
+    
+    def test_get_images_from_html_multiple(self):
+        # should find every <img> tag
+        input_url = "https://crawler-test.com"
+        input_body = '''
+        <html><body>
+            <img src="/logo.png" alt="Logo">
+            <img src="https://other.com/image.jpg" alt="Other">
+        </body></html>
+        '''
+        actual = get_images_from_html(input_body, input_url)
+        expected = [
+            "https://crawler-test.com/logo.png",
+            "https://other.com/image.jpg",
+        ]
         self.assertEqual(actual, expected)
 
 if __name__ == "__main__":

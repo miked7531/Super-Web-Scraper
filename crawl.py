@@ -1,4 +1,4 @@
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urljoin
 from bs4 import BeautifulSoup, Tag
 
 def normalize_url(url: str) -> str:
@@ -45,3 +45,38 @@ def get_first_paragraph_from_html(html: str) -> str:
     
     # safely extract the text if a <p> tag is found, otherwise return an empty string
     return p_tag.get_text(strip=True) if isinstance(p_tag, Tag) else ""
+
+def get_urls_from_html(html: str, base_url: str) -> list[str]:
+    # parse the HTML
+    soup = BeautifulSoup(html, "html.parser")
+
+    # find all <a> tags
+    anchors = soup.find_all("a")
+
+    urls = []
+    for anchor in anchors:
+        # get the href attribute (may be None)
+        href = anchor.get("href")
+        if href:
+            # turn relative URLs into absolute ones
+            absolute_url = urljoin(base_url, href)
+            urls.append(absolute_url)
+    
+    return urls
+
+def get_images_from_html(html: str, base_url: str) -> list[str]:
+    # Parse the HTML
+    soup = BeautifulSoup(html, "html.parser")
+
+    # Find all <img> tags
+    images = soup.find_all("img")
+
+    urls = []
+    for img in images:
+        # Get the src attribute (may be None)
+        src = img.get("src")
+        if src:
+            # Turn relative URLs into absolute ones
+            absolute_url = urljoin(base_url, src)
+            urls.append(absolute_url)
+    return urls
