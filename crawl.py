@@ -80,3 +80,13 @@ def get_images_from_html(html: str, base_url: str) -> list[str]:
             absolute_url = urljoin(base_url, src)
             urls.append(absolute_url)
     return urls
+
+def extract_page_data(html: str, page_url: str) -> dict:
+    # Build a structured dictionary of all the useful page information
+    return {
+        "url": page_url,    # the crawled page
+        "heading": get_heading_from_html(html), #h1 or h2
+        "first_paragraph": get_first_paragraph_from_html(html),     #best paragraph
+        "outgoing_links": get_urls_from_html(html, page_url),   # all <a> hrefs
+        "image_urls": get_images_from_html(html, page_url),    # all <img> srcs
+    }
