@@ -1,4 +1,5 @@
 import sys
+from crawl import get_html
 
 def main():
     # sys.argv[0] is the script name itself
@@ -16,6 +17,10 @@ def main():
     # at this point there should be exactly one argument
     base_url = sys.argv[1]
     print(f"starting crawl of: {base_url}")
+
+    # Fetch and print the HTML of the starting page
+    html = get_html(base_url)
+    print(html)
 
 if __name__ == "__main__":
     main()
